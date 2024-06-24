@@ -5,9 +5,9 @@ import * as unpacker from "unpacker";
 import { unpack } from "unpacker";
 import { load } from "cheerio";
 import FormData from "form-data";
-import { parse, stringify } from "hls-parser";
 import cookie from "cookie";
 import setCookieParser from "set-cookie-parser";
+import { parse, stringify } from "hls-parser";
 class NotFoundError extends Error {
   constructor(reason) {
     super(`Couldn't find a stream: ${reason ?? "not found"}`);
@@ -698,6 +698,8 @@ async function braflixScraper(source, ctx) {
   const res = JSON.parse(decryptedText);
   if (!res.sources || !res.sources.length)
     throw new NotFoundError();
+  if (source === "febbox")
+    logger.log(source, res);
   return {
     embeds: [],
     stream: [
@@ -4097,20 +4099,6 @@ const hydraxScraper = makeEmbed({
     };
   }
 });
-async function convertPlaylistsToDataUrls(fetcher, playlistUrl, headers) {
-  const playlistData = await fetcher(playlistUrl, { headers });
-  const playlist = parse(playlistData);
-  if (playlist.isMasterPlaylist) {
-    await Promise.all(
-      playlist.variants.map(async (variant) => {
-        const variantPlaylistData = await fetcher(variant.uri, { headers });
-        const variantPlaylist = parse(variantPlaylistData);
-        variant.uri = `data:application/vnd.apple.mpegurl;base64,${btoa(stringify(variantPlaylist))}`;
-      })
-    );
-  }
-  return `data:application/vnd.apple.mpegurl;base64,${btoa(stringify(playlist))}`;
-}
 const { AES, MD5 } = CryptoJS;
 function mahoaData(input, key2) {
   const a = AES.encrypt(input, key2).toString();
@@ -4190,7 +4178,7 @@ const playm4uNMScraper = makeEmbed({
         {
           id: "primary",
           type: "hls",
-          playlist: await convertPlaylistsToDataUrls(ctx.proxiedFetcher, apiRes.data),
+          playlist: apiRes.data,
           captions: [],
           flags: [flags.CORS_ALLOWED]
         }
@@ -6490,6 +6478,20 @@ const smashyStreamScraper = makeSourcerer({
   scrapeMovie: universalScraper$2,
   scrapeShow: universalScraper$2
 });
+async function convertPlaylistsToDataUrls(fetcher, playlistUrl, headers) {
+  const playlistData = await fetcher(playlistUrl, { headers });
+  const playlist = parse(playlistData);
+  if (playlist.isMasterPlaylist) {
+    await Promise.all(
+      playlist.variants.map(async (variant) => {
+        const variantPlaylistData = await fetcher(variant.uri, { headers });
+        const variantPlaylist = parse(variantPlaylistData);
+        variant.uri = `data:application/vnd.apple.mpegurl;base64,${btoa(stringify(variantPlaylist))}`;
+      })
+    );
+  }
+  return `data:application/vnd.apple.mpegurl;base64,${btoa(stringify(playlist))}`;
+}
 const baseUrl = "https://soaper.tv";
 const universalScraper$1 = async (ctx) => {
   const searchResult = await ctx.proxiedFetcher("/search.html", {
