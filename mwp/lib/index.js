@@ -698,7 +698,6 @@ async function braflixScraper(source, ctx) {
   const res = JSON.parse(decryptedText);
   if (!res.sources || !res.sources.length)
     throw new NotFoundError();
-  logger.log("braflix", res);
   return {
     embeds: [],
     stream: [
