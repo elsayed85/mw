@@ -23,25 +23,22 @@ function _sort(input, builtin) {
         return builtin;
     input = input.split(",");
     let input_only = true;
+    const plus = [], minus = [];
     for (const i of input) {
         if (i[0] === "+") {
             input_only = false;
             const index = builtin.indexOf(i.slice(1));
-            if (index > -1) {
-                builtin.splice(index, 1);
-            }
-            builtin.unshift(i.slice(1));
+            if (index > -1) builtin.splice(index, 1);
+            plus.push(i.slice(1));
         }
         if (i[0] === "-") {
             input_only = false;
             const index = builtin.indexOf(i.slice(1));
-            if (index > -1) {
-                builtin.splice(index, 1);
-            }
-            builtin.push(i.slice(1));
+            if (index > -1) builtin.splice(index, 1);
+            minus.push(i.slice(1));
         }
     }
-    return input_only ? input : builtin;
+    return input_only ? input : [...plus, ...builtin, ...minus];
 }
 
 export async function mw(query, s = 1, e = 1, so = "", eo = "", ip = false) {
