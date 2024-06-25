@@ -223,8 +223,8 @@ function makeEmbed(state) {
     mediaTypes: void 0
   };
 }
-const baseUrl$9 = "https://nsbx.wafflehacker.io";
-const _fetcher = (fetcher, url) => fetcher(url, {
+const baseUrl$a = "https://nsbx.wafflehacker.io";
+const _fetcher$1 = (fetcher, url) => fetcher(url, {
   headers: {
     origin: "https://www.vidbinge.com",
     accept: "*/*",
@@ -235,7 +235,7 @@ const _fetcher = (fetcher, url) => fetcher(url, {
     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:125.0) Gecko/20100101 Firefox/125.0"
   }
 });
-async function comboScraper$3(ctx) {
+async function comboScraper$4(ctx) {
   var _a;
   const query = {
     title: ctx.media.title,
@@ -250,7 +250,7 @@ async function comboScraper$3(ctx) {
     query.season = ctx.media.season.number.toString();
     query.episode = ctx.media.episode.number.toString();
   }
-  const res = await _fetcher(ctx.fetcher, `${baseUrl$9}/status`);
+  const res = await _fetcher$1(ctx.fetcher, `${baseUrl$a}/status`);
   if (((_a = res.providers) == null ? void 0 : _a.length) === 0) {
     throw new NotFoundError("No providers available");
   }
@@ -270,8 +270,8 @@ const nsbxScraper = makeSourcerer({
   rank: 150,
   flags: [flags.CORS_ALLOWED],
   disabled: false,
-  scrapeMovie: comboScraper$3,
-  scrapeShow: comboScraper$3
+  scrapeMovie: comboScraper$4,
+  scrapeShow: comboScraper$4
 });
 const providers$1 = [
   {
@@ -290,9 +290,9 @@ function embed$1(provider) {
     rank: provider.rank,
     disabled: false,
     async scrape(ctx) {
-      const search2 = await _fetcher(
+      const search2 = await _fetcher$1(
         ctx.fetcher.full,
-        `${baseUrl$9}/search?query=${encodeURIComponent(ctx.url)}&provider=${provider.id}`
+        `${baseUrl$a}/search?query=${encodeURIComponent(ctx.url)}&provider=${provider.id}`
       );
       if (search2.statusCode === 429) {
         throw new Error("Rate limited");
@@ -300,9 +300,9 @@ function embed$1(provider) {
         throw new NotFoundError("Failed to search");
       }
       ctx.progress(50);
-      const result = await _fetcher(
+      const result = await _fetcher$1(
         ctx.fetcher,
-        `${baseUrl$9}/source?resourceId=${encodeURIComponent(search2.body.url)}&provider=${provider.id}`
+        `${baseUrl$a}/source?resourceId=${encodeURIComponent(search2.body.url)}&provider=${provider.id}`
       );
       ctx.progress(100);
       return result;
@@ -598,14 +598,14 @@ function getValidQualityFromString(quality) {
       return "unknown";
   }
 }
-const baseUrl$8 = atob("aHR0cHM6Ly93d3cuYnJhZmxpeC5ydQ==");
+const baseUrl$9 = atob("aHR0cHM6Ly93d3cuYnJhZmxpeC5ydQ==");
 const apiUrl$1 = atob("aHR0cHM6Ly9hcGkuYnJhZmxpeC5ydQ==");
 const wasmUrl = atob("aHR0cHM6Ly93d3cuYnJhZmxpeC5ydS9yZWxlYXNlLndhc20=");
 atob("MTg1LjIwMi4xMTMuMTAy");
 async function sendRequest$1(url) {
   return fetch(url, {
     headers: {
-      referer: `${baseUrl$8}/`,
+      referer: `${baseUrl$9}/`,
       accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
       "accept-encoding": "gzip, deflate, br",
       "accept-language": "en-US;q=0.9,en;q=0.8",
@@ -660,7 +660,7 @@ async function decryptWasm(encryptedText, tmdbId) {
   return Array.from(readBuffer.subarray(readStart >>> 1, readEnd)).map((c) => String.fromCharCode(c)).join("");
 }
 async function decrypt(doubleEncryptedText, mediaType, tmdbId) {
-  const detailPageUrl = `${baseUrl$8}/${mediaType}/${tmdbId}`;
+  const detailPageUrl = `${baseUrl$9}/${mediaType}/${tmdbId}`;
   const secret = await getSecretFrom(detailPageUrl);
   if (!secret) {
     logger.log("braflix", `Failed to get secret from ${detailPageUrl}`);
@@ -1143,7 +1143,7 @@ function makeControls(ops) {
   };
 }
 const nanoid = customAlphabet("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", 10);
-const baseUrl$7 = "https://d000d.com";
+const baseUrl$8 = "https://d000d.com";
 const doodScraper = makeEmbed({
   id: "dood",
   name: "dood",
@@ -1158,17 +1158,17 @@ const doodScraper = makeEmbed({
     const id = url.split("/d/")[1] || url.split("/e/")[1];
     const doodData = await ctx.proxiedFetcher(`/e/${id}`, {
       method: "GET",
-      baseUrl: baseUrl$7
+      baseUrl: baseUrl$8
     });
     const dataForLater = (_a = doodData.match(/\?token=([^&]+)&expiry=/)) == null ? void 0 : _a[1];
     const path = (_b = doodData.match(/\$\.get\('\/pass_md5([^']+)/)) == null ? void 0 : _b[1];
     const thumbnailTrack = doodData.match(/thumbnails:\s\{\s*vtt:\s'([^']*)'/);
     const doodPage = await ctx.proxiedFetcher(`/pass_md5${path}`, {
       headers: {
-        Referer: `${baseUrl$7}/e/${id}`
+        Referer: `${baseUrl$8}/e/${id}`
       },
       method: "GET",
-      baseUrl: baseUrl$7
+      baseUrl: baseUrl$8
     });
     const downloadURL = `${doodPage}${nanoid()}?token=${dataForLater}&expiry=${Date.now()}`;
     if (!downloadURL.startsWith("http"))
@@ -1187,7 +1187,7 @@ const doodScraper = makeEmbed({
             }
           },
           headers: {
-            Referer: baseUrl$7
+            Referer: baseUrl$8
           },
           ...thumbnailTrack ? {
             thumbnailTrack: {
@@ -1653,6 +1653,84 @@ const mp4uploadScraper = makeEmbed({
         }
       ]
     };
+  }
+});
+const baseUrl$7 = "https://api.whvx.net";
+async function comboScraper$3(ctx) {
+  const query = {
+    title: ctx.media.title,
+    releaseYear: ctx.media.releaseYear,
+    type: ctx.media.type,
+    imdbId: ctx.media.imdbId,
+    season: "",
+    episode: ""
+  };
+  if (ctx.media.type === "show") {
+    query.season = ctx.media.season.number.toString();
+    query.episode = ctx.media.episode.number.toString();
+  }
+  const providers2 = ["nova", null];
+  const embeds = providers2.map((provider) => {
+    return {
+      embedId: provider || "",
+      url: JSON.stringify(query)
+    };
+  });
+  return {
+    embeds
+  };
+}
+const whvxScraper = makeSourcerer({
+  id: "whvx",
+  name: "WHVX",
+  rank: 160,
+  flags: [flags.CORS_ALLOWED],
+  disabled: false,
+  scrapeMovie: comboScraper$3,
+  scrapeShow: comboScraper$3
+});
+const _fetcher = (fetcher, url) => fetcher(url, {
+  headers: {
+    origin: "https://www.vidbinge.com",
+    accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+    "accept-language": "en-US;q=0.9,en;q=0.8",
+    "upgrade-insecure-requests": "1",
+    "sec-fetch-dest": "empty",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "cross-site",
+    "user-agent": "Mozilla/5.0 (Android 14; Mobile; rv:127.0) Gecko/127.0 Firefox/127.0"
+  }
+});
+const novaScraper = makeEmbed({
+  id: "nova",
+  name: "Nova",
+  rank: 670,
+  disabled: false,
+  async scrape(ctx) {
+    let progress = 50;
+    const interval = setInterval(() => {
+      if (progress < 100) {
+        progress += 1;
+        ctx.progress(progress);
+      }
+    }, 100);
+    try {
+      const search2 = await _fetcher(ctx.fetcher, `${baseUrl$7}/search?query=${encodeURIComponent(ctx.url)}`);
+      if (search2.statusCode === 404) {
+        throw new Error("No files found");
+      }
+      const result = await _fetcher(ctx.fetcher, `${baseUrl$7}/source?resourceId=${encodeURIComponent(search2.url)}`);
+      if (result.statusCode === 404) {
+        throw new Error("No streams found");
+      }
+      clearInterval(interval);
+      ctx.progress(100);
+      return result;
+    } catch (error) {
+      clearInterval(interval);
+      ctx.progress(100);
+      throw new NotFoundError("Failed to search");
+    }
   }
 });
 const hunterRegex = /eval\(function\(h,u,n,t,e,r\).*?\("(.*?)",\d*?,"(.*?)",(\d*?),(\d*?),\d*?\)\)/;
@@ -6759,6 +6837,7 @@ function gatherAllSources() {
     kissAsianScraper,
     showboxScraper,
     febboxScraper,
+    whvxScraper,
     goMoviesScraper,
     zoechipScraper,
     vidsrcScraper,
@@ -6789,6 +6868,7 @@ function gatherAllEmbeds() {
     upstreamScraper,
     febboxMp4Scraper,
     febboxHlsScraper,
+    novaScraper,
     mixdropScraper,
     vidsrcembedScraper,
     streambucketScraper,
