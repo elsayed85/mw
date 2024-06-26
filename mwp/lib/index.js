@@ -310,16 +310,6 @@ function embed$1(provider) {
   });
 }
 const [deltaScraper, alphaScraper] = providers$1.map(embed$1);
-const DECRYPTION_KEY = "WXrUARXb1aDLaZjI";
-const decodeBase64UrlSafe = (str) => {
-  const standardizedInput = str.replace(/_/g, "/").replace(/-/g, "+");
-  const decodedData = atob(standardizedInput);
-  const bytes = new Uint8Array(decodedData.length);
-  for (let i = 0; i < bytes.length; i += 1) {
-    bytes[i] = decodedData.charCodeAt(i);
-  }
-  return bytes;
-};
 const decodeData = (key2, data2) => {
   const state = Array.from(Array(256).keys());
   let index1 = 0;
@@ -345,11 +335,6 @@ const decodeData = (key2, data2) => {
     }
   }
   return finalKey;
-};
-const decryptSourceUrl = (sourceUrl) => {
-  const encoded = decodeBase64UrlSafe(sourceUrl);
-  const decoded = decodeData(DECRYPTION_KEY, encoded);
-  return decodeURIComponent(decodeURIComponent(decoded));
 };
 const vidplayBase = "https://vidplay.online";
 const getDecryptionKeys = async (ctx) => {
@@ -734,16 +719,16 @@ makeSourcerer({
 const febboxScraper = makeSourcerer({
   id: "febbox",
   name: "Febbox",
-  rank: 1180,
+  rank: 131,
   flags: [flags.CORS_ALLOWED],
   disabled: false,
   scrapeMovie: braflixFrom("febbox"),
   scrapeShow: braflixFrom("febbox")
 });
-makeSourcerer({
+const vidSrcToScraper = makeSourcerer({
   id: "vidsrcto",
   name: "VidSrcTo",
-  rank: 1170,
+  rank: 130,
   flags: [flags.CORS_ALLOWED],
   disabled: false,
   scrapeMovie: braflixFrom("vidsrcto"),
@@ -805,6 +790,8 @@ async function validatePlayableStream(stream, ops, sourcererId) {
   if (SKIP_VALIDATION_CHECK_IDS.includes(sourcererId))
     return stream;
   if (stream.type === "hls") {
+    if (stream.playlist.startsWith("data:"))
+      return stream;
     const result = await ops.proxiedFetcher.full(stream.playlist, {
       method: "GET",
       headers: {
@@ -2687,7 +2674,7 @@ const streamsbScraper = makeEmbed({
   }
 });
 const origin$1 = "https://rabbitstream.net";
-const referer$4 = "https://rabbitstream.net/";
+const referer$3 = "https://rabbitstream.net/";
 const { AES: AES$1, enc } = CryptoJS;
 function isJSON(json) {
   try {
@@ -2789,7 +2776,7 @@ const upcloudScraper = makeEmbed({
           flags: [flags.CORS_ALLOWED],
           captions,
           preferredHeaders: {
-            Referer: referer$4,
+            Referer: referer$3,
             Origin: origin$1
           }
         }
@@ -3292,7 +3279,7 @@ async function scrape(ctx, media, result) {
   const video = await getVideo(ctx, id, media);
   return video;
 }
-async function universalScraper$8(ctx) {
+async function universalScraper$7(ctx) {
   const lookmovieData = await searchAndFindMedia$1(ctx, ctx.media);
   if (!lookmovieData)
     throw new NotFoundError("Media not found");
@@ -3320,12 +3307,12 @@ const lookmovieScraper = makeSourcerer({
   disabled: true,
   rank: 50,
   flags: [flags.IP_LOCKED],
-  scrapeShow: universalScraper$8,
-  scrapeMovie: universalScraper$8
+  scrapeShow: universalScraper$7,
+  scrapeMovie: universalScraper$7
 });
 const remotestreamBase = atob("aHR0cHM6Ly9mc2IuOG1ldDNkdGpmcmNxY2hjb25xcGtsd3hzeGIyb2N1bWMuc3RyZWFt");
 const origin = "https://remotestre.am";
-const referer$3 = "https://remotestre.am/";
+const referer$2 = "https://remotestre.am/";
 const remotestreamScraper = makeSourcerer({
   id: "remotestream",
   name: "Remote Stream",
@@ -3342,7 +3329,7 @@ const remotestreamScraper = makeSourcerer({
       method: "GET",
       readHeaders: ["content-type"],
       headers: {
-        Referer: referer$3
+        Referer: referer$2
       }
     });
     if (!((_a = streamRes.headers.get("content-type")) == null ? void 0 : _a.toLowerCase().includes("application/x-mpegurl")))
@@ -3358,7 +3345,7 @@ const remotestreamScraper = makeSourcerer({
           type: "hls",
           flags: [flags.CORS_ALLOWED],
           preferredHeaders: {
-            Referer: referer$3,
+            Referer: referer$2,
             Origin: origin
           }
         }
@@ -3373,7 +3360,7 @@ const remotestreamScraper = makeSourcerer({
       method: "GET",
       readHeaders: ["content-type"],
       headers: {
-        Referer: referer$3
+        Referer: referer$2
       }
     });
     if (!((_a = streamRes.headers.get("content-type")) == null ? void 0 : _a.toLowerCase().includes("application/x-mpegurl")))
@@ -3389,7 +3376,7 @@ const remotestreamScraper = makeSourcerer({
           type: "hls",
           flags: [flags.CORS_ALLOWED],
           preferredHeaders: {
-            Referer: referer$3,
+            Referer: referer$2,
             Origin: origin
           }
         }
@@ -3978,7 +3965,7 @@ const bflixScraper = makeEmbed({
     };
   }
 });
-const referer$2 = "https://ridomovies.tv/";
+const referer$1 = "https://ridomovies.tv/";
 const closeLoadScraper = makeEmbed({
   id: "closeload",
   name: "CloseLoad",
@@ -3987,7 +3974,7 @@ const closeLoadScraper = makeEmbed({
     var _a;
     const baseUrl3 = new URL(ctx.url).origin;
     const iframeRes = await ctx.proxiedFetcher(ctx.url, {
-      headers: { referer: referer$2 }
+      headers: { referer: referer$1 }
     });
     const iframeRes$ = load(iframeRes);
     const captions = iframeRes$("track").map((_, el) => {
@@ -4264,7 +4251,7 @@ const playm4uNMScraper = makeEmbed({
     };
   }
 });
-const referer$1 = "https://ridomovies.tv/";
+const referer = "https://ridomovies.tv/";
 const ridooScraper = makeEmbed({
   id: "ridoo",
   name: "Ridoo",
@@ -4273,7 +4260,7 @@ const ridooScraper = makeEmbed({
     var _a;
     const res = await ctx.proxiedFetcher(ctx.url, {
       headers: {
-        referer: referer$1
+        referer
       }
     });
     const regexPattern = /file:"([^"]+)"/g;
@@ -4683,7 +4670,7 @@ async function scrapeIds(ctx, media, result) {
   const embeds = await getEmbeds(ctx, id);
   return embeds;
 }
-async function universalScraper$7(ctx) {
+async function universalScraper$6(ctx) {
   const goojaraData = await searchAndFindMedia(ctx, ctx.media);
   if (!goojaraData)
     throw new NotFoundError("Media not found");
@@ -4702,8 +4689,8 @@ const goojaraScraper = makeSourcerer({
   rank: 70,
   flags: [],
   disabled: true,
-  scrapeShow: universalScraper$7,
-  scrapeMovie: universalScraper$7
+  scrapeShow: universalScraper$6,
+  scrapeMovie: universalScraper$6
 });
 function generateRandomFavs() {
   const randomHex = () => Math.floor(Math.random() * 16).toString(16);
@@ -4825,7 +4812,7 @@ async function getTranslatorId(url, id, ctx) {
   const translatorId = match ? match[1] : null;
   return translatorId;
 }
-const universalScraper$6 = async (ctx) => {
+const universalScraper$5 = async (ctx) => {
   const result = await searchAndFindMediaId(ctx);
   if (!result || !result.id)
     throw new NotFoundError("No result found");
@@ -4853,11 +4840,11 @@ const hdRezkaScraper = makeSourcerer({
   name: "HDRezka",
   rank: 120,
   flags: [flags.CORS_ALLOWED, flags.IP_LOCKED],
-  scrapeShow: universalScraper$6,
-  scrapeMovie: universalScraper$6
+  scrapeShow: universalScraper$5,
+  scrapeMovie: universalScraper$5
 });
 let baseUrl$2 = "https://m4ufree.tv";
-const universalScraper$5 = async (ctx) => {
+const universalScraper$4 = async (ctx) => {
   var _a, _b, _c;
   const homePage = await ctx.proxiedFetcher.full(baseUrl$2);
   baseUrl$2 = new URL(homePage.finalUrl).origin;
@@ -4963,12 +4950,12 @@ const m4uScraper = makeSourcerer({
   name: "M4UFree",
   rank: 125,
   flags: [flags.CORS_ALLOWED],
-  scrapeMovie: universalScraper$5,
-  scrapeShow: universalScraper$5
+  scrapeMovie: universalScraper$4,
+  scrapeShow: universalScraper$4
 });
 const nepuBase = "https://nepu.to";
 const nepuReferer = `${nepuBase}/`;
-const universalScraper$4 = async (ctx) => {
+const universalScraper$3 = async (ctx) => {
   const searchResultRequest = await ctx.proxiedFetcher("/ajax/posts", {
     baseUrl: nepuBase,
     query: {
@@ -5029,8 +5016,8 @@ const nepuScraper = makeSourcerer({
   rank: 80,
   flags: [],
   disabled: true,
-  scrapeMovie: universalScraper$4,
-  scrapeShow: universalScraper$4
+  scrapeMovie: universalScraper$3,
+  scrapeShow: universalScraper$3
 });
 const baseUrl$1 = "https://w1.nites.is";
 async function comboScraper(ctx) {
@@ -6468,7 +6455,7 @@ const primewireScraper = makeSourcerer({
 });
 const ridoMoviesBase = `https://ridomovies.tv`;
 const ridoMoviesApiBase = `${ridoMoviesBase}/core/api`;
-const universalScraper$3 = async (ctx) => {
+const universalScraper$2 = async (ctx) => {
   const searchResult = await ctx.proxiedFetcher("/search", {
     baseUrl: ridoMoviesApiBase,
     query: {
@@ -6530,10 +6517,10 @@ const ridooMoviesScraper = makeSourcerer({
   name: "RidoMovies",
   rank: 100,
   flags: [flags.CORS_ALLOWED],
-  scrapeMovie: universalScraper$3,
-  scrapeShow: universalScraper$3
+  scrapeMovie: universalScraper$2,
+  scrapeShow: universalScraper$2
 });
-const universalScraper$2 = async (ctx) => {
+const universalScraper$1 = async (ctx) => {
   const query = ctx.media.type === "movie" ? `?tmdb=${ctx.media.tmdbId}` : `?tmdbId=${ctx.media.tmdbId}&season=${ctx.media.season.number}&episode=${ctx.media.episode.number}`;
   return {
     embeds: [
@@ -6553,8 +6540,8 @@ const smashyStreamScraper = makeSourcerer({
   name: "SmashyStream",
   rank: 30,
   flags: [flags.CORS_ALLOWED],
-  scrapeMovie: universalScraper$2,
-  scrapeShow: universalScraper$2
+  scrapeMovie: universalScraper$1,
+  scrapeShow: universalScraper$1
 });
 async function convertPlaylistsToDataUrls(fetcher, playlistUrl, headers) {
   const playlistData = await fetcher(playlistUrl, { headers });
@@ -6571,7 +6558,7 @@ async function convertPlaylistsToDataUrls(fetcher, playlistUrl, headers) {
   return `data:application/vnd.apple.mpegurl;base64,${btoa(stringify(playlist))}`;
 }
 const baseUrl = "https://soaper.tv";
-const universalScraper$1 = async (ctx) => {
+const universalScraper = async (ctx) => {
   const searchResult = await ctx.proxiedFetcher("/search.html", {
     baseUrl,
     query: {
@@ -6661,82 +6648,8 @@ const soaperTvScraper = makeSourcerer({
   name: "SoaperTV",
   rank: 126,
   flags: [flags.CORS_ALLOWED],
-  scrapeMovie: universalScraper$1,
-  scrapeShow: universalScraper$1
-});
-const vidSrcToBase = "https://vidsrc.to";
-const referer = `${vidSrcToBase}/`;
-const universalScraper = async (ctx) => {
-  var _a;
-  const mediaId = ctx.media.imdbId ?? ctx.media.tmdbId;
-  const url = ctx.media.type === "movie" ? `/embed/movie/${mediaId}` : `/embed/tv/${mediaId}/${ctx.media.season.number}/${ctx.media.episode.number}`;
-  const mainPage = await ctx.proxiedFetcher(url, {
-    baseUrl: vidSrcToBase,
-    headers: {
-      referer
-    }
-  });
-  const mainPage$ = load(mainPage);
-  const dataId = mainPage$("a[data-id]").attr("data-id");
-  if (!dataId)
-    throw new Error("No data-id found");
-  const sources = await ctx.proxiedFetcher(`/ajax/embed/episode/${dataId}/sources`, {
-    baseUrl: vidSrcToBase,
-    headers: {
-      referer
-    }
-  });
-  if (sources.status !== 200)
-    throw new Error("No sources found");
-  const embeds = [];
-  const embedArr = [];
-  for (const source of sources.result) {
-    const sourceRes = await ctx.proxiedFetcher(`/ajax/embed/source/${source.id}`, {
-      baseUrl: vidSrcToBase,
-      headers: {
-        referer
-      }
-    });
-    const decryptedUrl = decryptSourceUrl(sourceRes.result.url);
-    embedArr.push({ source: source.title, url: decryptedUrl });
-  }
-  for (const embedObj of embedArr) {
-    if (embedObj.source === "Vidplay") {
-      const fullUrl = new URL(embedObj.url);
-      embeds.push({
-        embedId: "vidplay",
-        url: fullUrl.toString()
-      });
-    }
-    if (embedObj.source === "Filemoon") {
-      const fullUrl = new URL(embedObj.url);
-      const urlWithSubtitles = (_a = embedArr.find((v) => v.source === "Vidplay" && v.url.includes("sub.info"))) == null ? void 0 : _a.url;
-      const subtitleUrl = urlWithSubtitles ? new URL(urlWithSubtitles).searchParams.get("sub.info") : null;
-      if (subtitleUrl)
-        fullUrl.searchParams.set("sub.info", subtitleUrl);
-      embeds.push(
-        {
-          embedId: "filemoon",
-          url: fullUrl.toString()
-        },
-        {
-          embedId: "filemoon-mp4",
-          url: fullUrl.toString()
-        }
-      );
-    }
-  }
-  return {
-    embeds
-  };
-};
-const vidSrcToScraper = makeSourcerer({
-  id: "vidsrcto",
-  name: "VidSrcTo",
   scrapeMovie: universalScraper,
-  scrapeShow: universalScraper,
-  flags: [],
-  rank: 130
+  scrapeShow: universalScraper
 });
 const warezcdnScraper = makeSourcerer({
   id: "warezcdn",
