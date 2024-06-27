@@ -587,6 +587,7 @@ const baseUrl$9 = atob("aHR0cHM6Ly93d3cuYnJhZmxpeC5ydQ==");
 const apiUrl$1 = atob("aHR0cHM6Ly9hcGkuYnJhZmxpeC5ydQ==");
 atob("aHR0cHM6Ly93d3cuYnJhZmxpeC5ydS9yZWxlYXNlLndhc20=");
 const wasmUrl = "https://gitlab.com/goofw/node/-/raw/main/bra.wasm";
+const secretUrl = "https://bra.2048xyx.workers.dev";
 atob("MTg1LjIwMi4xMTMuMTAy");
 async function sendRequest$1(url) {
   return fetch(url, {
@@ -645,14 +646,21 @@ async function decryptWasm(encryptedText, tmdbId) {
   return Array.from(readBuffer.subarray(readStart >>> 1, readEnd)).map((c) => String.fromCharCode(c)).join("");
 }
 async function decrypt(doubleEncryptedText, ctx) {
-  const detailPageUrl = `${baseUrl$9}/${ctx.media.type === "movie" ? "movie" : "tv"}/${ctx.media.tmdbId}`;
-  const secret = await getSecret(detailPageUrl, ctx);
-  if (!secret) {
-    logger.log("braflix", `Failed to get secret from ${detailPageUrl}`);
-    return;
-  }
   const encryptedText = await decryptWasm(doubleEncryptedText, ctx.media.tmdbId);
-  return CryptoJS.AES.decrypt(encryptedText, secret).toString(CryptoJS.enc.Utf8);
+  const path = `${ctx.media.type === "movie" ? "movie" : "tv"}/${ctx.media.tmdbId}`;
+  let secret = await (await fetch(`${secretUrl}/${path}`)).text();
+  try {
+    return JSON.stringify(JSON.parse(CryptoJS.AES.decrypt(encryptedText, secret).toString(CryptoJS.enc.Utf8)));
+  } catch (error) {
+    const detailPageUrl = `${baseUrl$9}/${path}`;
+    secret = await getSecret(detailPageUrl, ctx);
+    if (!secret) {
+      logger.log("braflix", `Failed to get secret from ${detailPageUrl}`);
+      return;
+    }
+    await fetch(`${secretUrl}/${path}`, { method: "POST", body: secret });
+    return CryptoJS.AES.decrypt(encryptedText, secret).toString(CryptoJS.enc.Utf8);
+  }
 }
 async function braflixScraper(source, ctx) {
   const url = new URL(`${apiUrl$1}/${source}/sources-with-title`);
