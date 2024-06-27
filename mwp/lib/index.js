@@ -616,12 +616,15 @@ async function decode$1(text) {
 async function getSecret(detailPageUrl, ctx) {
   var _a;
   const html = await ctx.fetcher(detailPageUrl);
+  logger.log("braflix", html);
   const rawDetails = (_a = html.match(new RegExp('(?<="details":")[0-9a-zA-Z]+(?=")'))) == null ? void 0 : _a[0];
+  logger.log("braflix", rawDetails);
   if (!rawDetails) {
     logger.log("braflix", `Failed to get rawDetails from ${detailPageUrl}: ${html}`);
     return;
   }
   const details = await decode$1(rawDetails);
+  logger.log("braflix", details);
   for (const [key2, value] of Object.entries(details)) {
     if (typeof value === "string" && !value.startsWith("http")) {
       return value;
@@ -646,12 +649,14 @@ async function decryptWasm(encryptedText, tmdbId) {
 async function decrypt(doubleEncryptedText, ctx) {
   const detailPageUrl = `${baseUrl$9}/${ctx.media.type === "movie" ? "movie" : "tv"}/${ctx.media.tmdbId}`;
   const secret = await getSecret(detailPageUrl, ctx);
+  logger.log("braflix", secret);
   if (!secret) {
     logger.log("braflix", `Failed to get secret from ${detailPageUrl}`);
     return;
   }
   try {
     const encryptedText = await decryptWasm(doubleEncryptedText, ctx.media.tmdbId);
+    logger.log("braflix", encryptedText);
     return CryptoJS.AES.decrypt(encryptedText, secret).toString(CryptoJS.enc.Utf8);
   } catch (error) {
     logger.log("braflix", error);
