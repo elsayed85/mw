@@ -752,7 +752,7 @@ const flixhqScraper = makeSourcerer({
   scrapeMovie: braflixFrom("flixhq"),
   scrapeShow: braflixFrom("flixhq")
 });
-const vidsrcScraper$1 = makeSourcerer({
+makeSourcerer({
   id: "vidsrc",
   name: "VidSrc",
   rank: 1140,
@@ -766,9 +766,10 @@ const SKIP_VALIDATION_CHECK_IDS = [
   deltaScraper.id,
   alphaScraper.id,
   vidplayScraper.id,
+  febboxScraper,
   flixhqScraper.id,
   goMoviesScraper.id,
-  vidsrcScraper$1.id
+  vidSrcToScraper.id
 ];
 function isValidStream$1(stream) {
   if (!stream)
