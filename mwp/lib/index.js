@@ -613,10 +613,9 @@ async function decode$1(text) {
   const decompressedStream = blob.stream().pipeThrough(ds);
   return new Response(decompressedStream).json();
 }
-async function getSecretFrom(detailPageUrl) {
+async function getSecret(detailPageUrl, ctx) {
   var _a;
-  const response = await sendRequest$1(detailPageUrl);
-  const html = await response.text();
+  const html = await ctx.fetcher(detailPageUrl);
   const rawDetails = (_a = html.match(new RegExp('(?<="details":")[0-9a-zA-Z]+(?=")'))) == null ? void 0 : _a[0];
   if (!rawDetails) {
     logger.log("braflix", `Failed to get rawDetails from ${detailPageUrl}: ${html}`);
@@ -644,38 +643,36 @@ async function decryptWasm(encryptedText, tmdbId) {
   const readBuffer = new Uint16Array(memory.buffer);
   return Array.from(readBuffer.subarray(readStart >>> 1, readEnd)).map((c) => String.fromCharCode(c)).join("");
 }
-async function decrypt(doubleEncryptedText, mediaType, tmdbId) {
-  const detailPageUrl = `${baseUrl$9}/${mediaType}/${tmdbId}`;
-  const secret = await getSecretFrom(detailPageUrl);
+async function decrypt(doubleEncryptedText, ctx) {
+  const detailPageUrl = `${baseUrl$9}/${ctx.media.type === "movie" ? "movie" : "tv"}/${ctx.media.tmdbId}`;
+  const secret = await getSecret(detailPageUrl, ctx);
   if (!secret) {
     logger.log("braflix", `Failed to get secret from ${detailPageUrl}`);
     return;
   }
   try {
-    const encryptedText = await decryptWasm(doubleEncryptedText, tmdbId);
+    const encryptedText = await decryptWasm(doubleEncryptedText, ctx.media.tmdbId);
     return CryptoJS.AES.decrypt(encryptedText, secret).toString(CryptoJS.enc.Utf8);
   } catch (error) {
     logger.log("braflix", error);
   }
 }
 async function braflixScraper(source, ctx) {
-  const media = ctx.media;
-  const tmdbMediaType = media.type === "movie" ? "movie" : "tv";
   const url = new URL(`${apiUrl$1}/${source}/sources-with-title`);
-  url.searchParams.append("title", media.title);
-  url.searchParams.append("mediaType", tmdbMediaType);
-  url.searchParams.append("year", media.releaseYear.toString());
-  url.searchParams.append("episodeId", media.type === "movie" ? "" : media.episode.number.toString());
-  url.searchParams.append("seasonId", media.type === "movie" ? "" : media.season.number.toString());
-  url.searchParams.append("tmdbId", media.tmdbId);
-  url.searchParams.append("imdbId", media.imdbId ?? "");
+  url.searchParams.append("title", ctx.media.title);
+  url.searchParams.append("mediaType", ctx.media.type === "movie" ? "movie" : "tv");
+  url.searchParams.append("year", ctx.media.releaseYear.toString());
+  url.searchParams.append("episodeId", ctx.media.type === "movie" ? "" : ctx.media.episode.number.toString());
+  url.searchParams.append("seasonId", ctx.media.type === "movie" ? "" : ctx.media.season.number.toString());
+  url.searchParams.append("tmdbId", ctx.media.tmdbId);
+  url.searchParams.append("imdbId", ctx.media.imdbId ?? "");
   const response = await sendRequest$1(url);
   const responseText = await response.text();
   if (response.status !== 200) {
     logger.log(source, `${url} ${response.status}: ${responseText}`);
     throw new NotFoundError();
   }
-  const decryptedText = await decrypt(responseText, tmdbMediaType, media.tmdbId);
+  const decryptedText = await decrypt(responseText, ctx);
   if (!decryptedText) {
     logger.log("braflix", `Failed to decrypt ${responseText}`);
     throw new NotFoundError();
