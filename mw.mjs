@@ -6,6 +6,7 @@ import {
     makeStandardFetcher,
     targets
 } from "@movie-web/providers";
+import { proxiedFetch } from "./proxy.mjs";
 import { getMediaDetails } from "./tmdb.mjs";
 
 const defaultProviders = makeProviders({
@@ -41,6 +42,13 @@ function _sort(input, builtin) {
     return input_only ? input : [...plus, ...builtin, ...minus];
 }
 
+async function _fetch(url, ...args) {
+    if (typeof url === 'string' && /^https:\/\/www\.braflix\.[a-z]+\/(movie|tv)\/\d+$/.test(url)) {
+        return new Response(await proxiedFetch(url));
+    }
+    return fetch(url, ...args);
+}
+
 export async function mw(query, s = 1, e = 1, so = "", eo = "", ip = false) {
     let media = await getMediaDetails(query, s, e);
     media.type = media.type === "movie" ? "movie" : "show";
@@ -49,7 +57,7 @@ export async function mw(query, s = 1, e = 1, so = "", eo = "", ip = false) {
     input.embedOrder = _sort(eo, defaultProviders.listEmbeds().map(e => e.id));
 
     let providers = buildProviders()
-        .setFetcher(makeStandardFetcher(fetch))
+        .setFetcher(makeStandardFetcher(_fetch))
         .setTarget(targets.ANY)
     if (ip)
         providers.enableConsistentIpForRequests()
