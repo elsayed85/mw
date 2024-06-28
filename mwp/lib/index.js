@@ -685,7 +685,7 @@ async function braflixScraper(source, ctx) {
   const res = JSON.parse(decryptedText);
   if (!res.sources || !res.sources.length)
     throw new NotFoundError();
-  if (source === "febbox")
+  if (source === "febboxvip")
     logger.log(source, res);
   return {
     embeds: [],
@@ -724,8 +724,8 @@ const febboxScraper = makeSourcerer({
   rank: 131,
   flags: [flags.CORS_ALLOWED],
   disabled: false,
-  scrapeMovie: braflixFrom("febbox"),
-  scrapeShow: braflixFrom("febbox")
+  scrapeMovie: braflixFrom("febboxvip"),
+  scrapeShow: braflixFrom("febboxvip")
 });
 const vidSrcToScraper = makeSourcerer({
   id: "vidsrcto",
