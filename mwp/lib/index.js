@@ -768,7 +768,7 @@ const SKIP_VALIDATION_CHECK_IDS = [
   deltaScraper.id,
   alphaScraper.id,
   vidplayScraper.id,
-  febboxScraper,
+  febboxScraper.id,
   flixhqScraper.id,
   goMoviesScraper.id,
   vidSrcToScraper.id
