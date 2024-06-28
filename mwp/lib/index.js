@@ -673,6 +673,8 @@ async function braflixScraper(source, ctx) {
   url.searchParams.append("seasonId", ctx.media.type === "movie" ? "" : ctx.media.season.number.toString());
   url.searchParams.append("tmdbId", ctx.media.tmdbId);
   url.searchParams.append("imdbId", ctx.media.imdbId ?? "");
+  if (source === "febboxvip")
+    url.searchParams.append("febboxServer", "hk1.shegu.net");
   const response = await sendRequest$1(url);
   const responseText = await response.text();
   if (response.status !== 200) {
@@ -688,7 +690,7 @@ async function braflixScraper(source, ctx) {
   if (!res.sources || !res.sources.length)
     throw new NotFoundError();
   if (source === "febboxvip")
-    logger.log(source, res);
+    logger.log(source, res.sources);
   return {
     embeds: [],
     stream: [
