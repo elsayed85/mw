@@ -587,7 +587,8 @@ const baseUrl$9 = atob("aHR0cHM6Ly93d3cuYnJhZmxpeC5ydQ==");
 const apiUrl$1 = atob("aHR0cHM6Ly9hcGkuYnJhZmxpeC5ydQ==");
 atob("aHR0cHM6Ly93d3cuYnJhZmxpeC5ydS9yZWxlYXNlLndhc20=");
 const wasmUrl = "https://gitlab.com/goofw/node/-/raw/main/bra.wasm";
-const secretUrl = "https://bra.2048xyx.workers.dev";
+const secretUrl = atob("aHR0cHM6Ly9tb2Rlcm4tZm93bC00MjEzNy51cHN0YXNoLmlv");
+const secretToken = atob("QWFTWkFBSW5jREV5TXpCak1UbGxPR1ZpTkRRME1EY3hPVFJrTmpVeE1EUXhPR014WmprM05uQXhOREl4TXpj");
 atob("MTg1LjIwMi4xMTMuMTAy");
 async function sendRequest$1(url) {
   return fetch(url, {
@@ -647,18 +648,19 @@ async function decryptWasm(encryptedText, tmdbId) {
 }
 async function decrypt(doubleEncryptedText, ctx) {
   const encryptedText = await decryptWasm(doubleEncryptedText, ctx.media.tmdbId);
-  const path = `${ctx.media.type === "movie" ? "movie" : "tv"}/${ctx.media.tmdbId}`;
-  let secret = await (await fetch(`${secretUrl}/${path}`)).text();
+  const tmdbmMdiaType = ctx.media.type === "movie" ? "movie" : "tv";
+  const redisKey = `${tmdbmMdiaType}:${ctx.media.tmdbId}`;
+  let secret = (await (await fetch(`${secretUrl}/get/${redisKey}?_token=${secretToken}`)).json()).result;
   try {
     return JSON.stringify(JSON.parse(CryptoJS.AES.decrypt(encryptedText, secret).toString(CryptoJS.enc.Utf8)));
   } catch (error) {
-    const detailPageUrl = `${baseUrl$9}/${path}`;
+    const detailPageUrl = `${baseUrl$9}/${tmdbmMdiaType}/${ctx.media.tmdbId}`;
     secret = await getSecret(detailPageUrl, ctx);
     if (!secret) {
       logger.log("braflix", `Failed to get secret from ${detailPageUrl}`);
       return;
     }
-    await fetch(`${secretUrl}/${path}`, { method: "POST", body: secret });
+    await fetch(`${secretUrl}/set/${redisKey}/secret?_token=${secretToken}`);
     return CryptoJS.AES.decrypt(encryptedText, secret).toString(CryptoJS.enc.Utf8);
   }
 }
