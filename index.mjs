@@ -36,6 +36,7 @@ router
         JSON.parse(readFileSync("./node_modules/@movie-web/providers/package.json")).version + "\n"
     ))
     .get("/ip", () => fetch("https://ipinfo.io/json"))
+    .get("/fetch", ({ query: { url } }) => fetch(url))
     .all("*", () => error(404))
 
 if (process.argv.length <= 2 || process.argv[2][0] === "-") {
