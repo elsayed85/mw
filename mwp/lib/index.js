@@ -660,7 +660,7 @@ async function decrypt(doubleEncryptedText, ctx) {
       logger.log("braflix", `Failed to get secret from ${detailPageUrl}`);
       return;
     }
-    await fetch(`${secretUrl}/set/${redisKey}/secret?_token=${secretToken}`);
+    await fetch(`${secretUrl}/set/${redisKey}/${secret}?_token=${secretToken}`);
     return CryptoJS.AES.decrypt(encryptedText, secret).toString(CryptoJS.enc.Utf8);
   }
 }
