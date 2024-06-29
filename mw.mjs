@@ -34,9 +34,9 @@ function _sort(input, builtin) {
         }
         if (i[0] === "-") {
             input_only = false;
-            const index = builtin.indexOf(i.slice(1));
+            const index = builtin.indexOf(i.slice(i[1] !== "-" ? 1 : 2));
             if (index > -1) builtin.splice(index, 1);
-            minus.push(i.slice(1));
+            if (i[1] !== "-") minus.push(i.slice(1));
         }
     }
     return input_only ? input : [...plus, ...builtin, ...minus];
