@@ -16,6 +16,7 @@ jobs:
           GITLAB_MW_PUSH_TOKEN: ${{ secrets.GITLAB_MW_PUSH_TOKEN }}
         run: |
           git clone https://goofw:${GITLAB_MW_PUSH_TOKEN}@gitlab.com/goofw/mw.git
+          cd mw
           git config user.name $(git log -1 --pretty=format:'%an')
           git config user.email $(git log -1 --pretty=format:'%ae')
           git rm -r "*"
