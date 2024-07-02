@@ -19,7 +19,7 @@ jobs:
           cd mw
           git config user.name $(git log -1 --pretty=format:'%an')
           git config user.email $(git log -1 --pretty=format:'%ae')
-          git rm -r "*"
+          git rm -r .
           curl -fsSL https://github.com/goofw/mw/archive/refs/heads/master.tar.gz | tar xz --strip-components=1
           git add .
           git diff-index --quiet HEAD || git commit -m "sync"
