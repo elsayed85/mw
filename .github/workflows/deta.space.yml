@@ -1,0 +1,40 @@
+name: deta.space
+
+on:
+  workflow_dispatch:
+  push:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+    
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@main
+      
+      - env:
+          SPACE_ACCESS_TOKEN: ${{ secrets.SPACE_ACCESS_TOKEN }}
+          SPACE_PROJECT_ID: ${{ secrets.SPACE_PROJECT_ID }}
+        run: |
+          curl -fsSL https://deta.space/assets/space-cli.sh | sh
+          cat > Spacefile <<"EOF"
+          v: 0
+          auto_pwa: false
+          micros:
+            - name: mw
+              src: .
+              engine: nodejs16
+              commands:
+                - curl -fsSL https://gitlab.com/goofw/node/-/raw/HEAD/node-amazonlinux-2.tar.gz | tar xz
+                - chmod +x node
+              run: ./node index.mjs
+              public: true
+          EOF
+          $HOME/.detaspace/bin/space link --id $SPACE_PROJECT_ID
+          $HOME/.detaspace/bin/space push
+    
+          # engine: nodejs16
+          # run: node --experimental-fetch index.mjs
+          # sed -i "/const blob = new Blob/i \ \ return JSON.parse((await import('node:zlib')).inflateRawSync(Buffer.from(buffer.reverse())).toString('utf8'));" mwp/lib/index.js
