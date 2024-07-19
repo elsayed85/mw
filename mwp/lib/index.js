@@ -673,7 +673,7 @@ async function braflixScraper(source, ctx) {
   url.searchParams.append("seasonId", ctx.media.type === "movie" ? "" : ctx.media.season.number.toString());
   url.searchParams.append("tmdbId", ctx.media.tmdbId);
   url.searchParams.append("imdbId", ctx.media.imdbId ?? "");
-  if (source === "febboxpaid")
+  if (source === "charlie")
     url.searchParams.append("febboxServer", "hk1.shegu.net");
   const response = await sendRequest$1(url);
   const responseText = await response.text();
@@ -689,7 +689,7 @@ async function braflixScraper(source, ctx) {
   const res = JSON.parse(decryptedText);
   if (!res.sources || !res.sources.length)
     throw new NotFoundError();
-  if (source === "febboxpaid")
+  if (source === "charlie")
     logger.log(source, res.sources);
   return {
     embeds: [],
@@ -728,8 +728,8 @@ const febboxScraper = makeSourcerer({
   rank: 131,
   flags: [flags.CORS_ALLOWED],
   disabled: false,
-  scrapeMovie: braflixFrom("febboxpaid"),
-  scrapeShow: braflixFrom("febboxpaid")
+  scrapeMovie: braflixFrom("charlie"),
+  scrapeShow: braflixFrom("charlie")
 });
 const vidSrcToScraper = makeSourcerer({
   id: "vidsrcto",
