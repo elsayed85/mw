@@ -697,7 +697,7 @@ async function braflixScraper(source, ctx) {
       {
         id: "primary",
         flags: [flags.CORS_ALLOWED],
-        captions: res.captions.map((s) => ({
+        captions: (res.subtitles ?? res.captions ?? {}).map((s) => ({
           type: getCaptionTypeFromUrl(s.url) ?? "srt",
           id: s.url,
           url: s.url,
