@@ -669,8 +669,8 @@ async function braflixScraper(source, ctx) {
   url.searchParams.append("title", ctx.media.title);
   url.searchParams.append("mediaType", ctx.media.type === "movie" ? "movie" : "tv");
   url.searchParams.append("year", ctx.media.releaseYear.toString());
-  url.searchParams.append("episodeId", ctx.media.type === "movie" ? "" : ctx.media.episode.number.toString());
-  url.searchParams.append("seasonId", ctx.media.type === "movie" ? "" : ctx.media.season.number.toString());
+  url.searchParams.append("episodeId", ctx.media.type === "movie" ? "1" : ctx.media.episode.number.toString());
+  url.searchParams.append("seasonId", ctx.media.type === "movie" ? "1" : ctx.media.season.number.toString());
   url.searchParams.append("tmdbId", ctx.media.tmdbId);
   url.searchParams.append("imdbId", ctx.media.imdbId ?? "");
   if (source === "charlie")
@@ -697,7 +697,7 @@ async function braflixScraper(source, ctx) {
       {
         id: "primary",
         flags: [flags.CORS_ALLOWED],
-        captions: res.subtitles.map((s) => ({
+        captions: res.captions.map((s) => ({
           type: getCaptionTypeFromUrl(s.url) ?? "srt",
           id: s.url,
           url: s.url,
